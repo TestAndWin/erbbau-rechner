@@ -167,6 +167,38 @@ h3{color:#042c54;font-size:14px;font-weight:bold;border-bottom:1px solid #ddd;pa
 </div>
 <div class="difference" id="kl_diff">-</div>
 </div>
+
+<div class="result-item">
+<h3>Modellvorschlag Klosterkammer Hannover</h3>
+<div class="result-subtitle">Zinssatz: tagesvariabler Zinssatz 10-jähriger Bundesanleihen (Kapitalmarktpapier), vorgesehen zwischen mind. 2% und max. 4%. 100% Bodenrichtwert ohne Abzug. 30% Rabatt auf die berechneten Erbbauzinsen für 20 Jahre – nur für Osnabrück, Göttingen, Hildesheim, Lüneburg. WICHTIG: Rabatt entfällt sofort bei Tod oder Verkauf. In dem Beispiel rechnen wir mit einem Zinssatz von 2.8%</div>
+<div class="result-values">
+<div class="result-value">
+<strong id="km2_boden">-</strong>
+<span>Bodenrichtwert €/m² (100%)</span>
+</div>
+<div class="result-value">
+<strong style="text-decoration:line-through;color:#999;" id="km2_jahr_base">-</strong>
+<span>jährlich (Basiswert)</span>
+</div>
+<div class="result-value" style="background-color:#e8f5e9;">
+<strong id="km2_jahr">-</strong>
+<span>jährlich (mit 30% Rabatt)</span>
+</div>
+<div class="result-value">
+<strong id="km2_monat">-</strong>
+<span>monatlich</span>
+</div>
+<div class="result-value">
+<strong id="km2_zins">-</strong>
+<span>Erbbauzins</span>
+</div>
+<div class="result-value" id="km2_anteil_box" style="display:none;">
+<strong id="km2_anteil">-</strong>
+<span>% vom Nettoeinkommen</span>
+</div>
+</div>
+<div class="difference" id="km2_diff">-</div>
+</div>
 </div>
 
 <div id="email-section" style="display:none;margin-top:30px;padding:20px;background-color:#f0f8ff;border-radius:8px;border:1px solid #042c54;">
@@ -253,7 +285,14 @@ function calc() {
     const fam_grund = groesse * fam_boden;
     const fam_jahr = fam_grund * 0.02;
     const fam_monat = fam_jahr / 12;
-    
+
+    // Modellvorschlag Klosterkammer Hannover
+    const km2_boden = boden;  // 100% current BRW, no cost deduction
+    const km2_grund = groesse * km2_boden;
+    const km2_jahr_base = km2_grund * 0.028;  // Base rent at 2.8%
+    const km2_jahr = km2_jahr_base * 0.70;     // 30% discount on RENT
+    const km2_monat = km2_jahr / 12;
+
     document.getElementById('ini_boden').textContent = formatCurrency(ini_boden);
     document.getElementById('ini_jahr').textContent = formatCurrency(ini_jahr);
     document.getElementById('ini_monat').textContent = formatCurrency(ini_monat);
@@ -273,23 +312,32 @@ function calc() {
     document.getElementById('fam_jahr').textContent = formatCurrency(fam_jahr);
     document.getElementById('fam_monat').textContent = formatCurrency(fam_monat);
     document.getElementById('fam_zins').textContent = '2%';
-    
+
+    document.getElementById('km2_boden').textContent = formatCurrency(km2_boden);
+    document.getElementById('km2_jahr_base').textContent = formatCurrency(km2_jahr_base);
+    document.getElementById('km2_jahr').textContent = formatCurrency(km2_jahr);
+    document.getElementById('km2_monat').textContent = formatCurrency(km2_monat);
+    document.getElementById('km2_zins').textContent = '2.8% (variabel)';
+
     if (!isNaN(netto) && netto > 0) {
         showPercent('ini_anteil', 'ini_anteil_box', ini_monat, netto);
         showPercent('kl_anteil', 'kl_anteil_box', kl_monat, netto);
         showPercent('lg_anteil', 'lg_anteil_box', lg_monat, netto);
         showPercent('fam_anteil', 'fam_anteil_box', fam_monat, netto);
+        showPercent('km2_anteil', 'km2_anteil_box', km2_monat, netto);
     } else {
         document.getElementById('ini_anteil_box').style.display = 'none';
         document.getElementById('kl_anteil_box').style.display = 'none';
         document.getElementById('lg_anteil_box').style.display = 'none';
         document.getElementById('fam_anteil_box').style.display = 'none';
+        document.getElementById('km2_anteil_box').style.display = 'none';
     }
     
     showDiff('kl_diff', kl_jahr, ini_jahr);
     showDiff('lg_diff', lg_jahr, ini_jahr);
     showDiff('fam_diff', fam_jahr, ini_jahr);
-    
+    showDiff('km2_diff', km2_jahr, ini_jahr);
+
     document.getElementById('results').style.display = 'block';
     document.getElementById('email-section').style.display = 'block';
 }
