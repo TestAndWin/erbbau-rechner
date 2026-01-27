@@ -177,16 +177,20 @@ h3{color:#042c54;font-size:14px;font-weight:bold;border-bottom:1px solid #ddd;pa
 <span>Bodenrichtwert €/m² (100%)</span>
 </div>
 <div class="result-value">
-<strong style="text-decoration:line-through;color:#999;" id="km2_jahr_base">-</strong>
+<strong id="km2_jahr_base">-</strong>
 <span>jährlich (Basiswert)</span>
+</div>
+<div class="result-value">
+<strong id="km2_monat_base">-</strong>
+<span>monatlich (Basiswert)</span>
 </div>
 <div class="result-value" style="background-color:#e8f5e9;">
 <strong id="km2_jahr">-</strong>
 <span>jährlich (mit 30% Rabatt)</span>
 </div>
-<div class="result-value">
+<div class="result-value" style="background-color:#e8f5e9;">
 <strong id="km2_monat">-</strong>
-<span>monatlich</span>
+<span>monatlich (mit 30% Rabatt)</span>
 </div>
 <div class="result-value">
 <strong id="km2_zins">-</strong>
@@ -290,6 +294,7 @@ function calc() {
     const km2_boden = boden;  // 100% current BRW, no cost deduction
     const km2_grund = groesse * km2_boden;
     const km2_jahr_base = km2_grund * 0.028;  // Base rent at 2.8%
+    const km2_monat_base = km2_jahr_base / 12; // Monthly base rent
     const km2_jahr = km2_jahr_base * 0.70;     // 30% discount on RENT
     const km2_monat = km2_jahr / 12;
 
@@ -315,6 +320,7 @@ function calc() {
 
     document.getElementById('km2_boden').textContent = formatCurrency(km2_boden);
     document.getElementById('km2_jahr_base').textContent = formatCurrency(km2_jahr_base);
+    document.getElementById('km2_monat_base').textContent = formatCurrency(km2_monat_base);
     document.getElementById('km2_jahr').textContent = formatCurrency(km2_jahr);
     document.getElementById('km2_monat').textContent = formatCurrency(km2_monat);
     document.getElementById('km2_zins').textContent = '2.8% (variabel)';
@@ -336,7 +342,7 @@ function calc() {
     showDiff('kl_diff', kl_jahr, ini_jahr);
     showDiff('lg_diff', lg_jahr, ini_jahr);
     showDiff('fam_diff', fam_jahr, ini_jahr);
-    showDiff('km2_diff', km2_jahr, ini_jahr);
+    showDiffDouble('km2_diff', km2_jahr_base, km2_jahr, ini_jahr);
 
     document.getElementById('results').style.display = 'block';
     document.getElementById('email-section').style.display = 'block';
@@ -354,7 +360,7 @@ function formatCurrency(amount) {
 function showDiff(elementId, current, reference) {
     const diff = current - reference;
     const element = document.getElementById(elementId);
-    
+
     if (diff > 0) {
         element.textContent = 'Differenz: +' + formatCurrency(diff) + ' mehr pro Jahr im Vergleich zum WIN-WIN-Lösungsmodell Erbbau';
         element.className = 'difference positive';
@@ -365,6 +371,39 @@ function showDiff(elementId, current, reference) {
         element.textContent = 'Differenz: Gleicher Betrag';
         element.className = 'difference';
     }
+}
+
+function showDiffDouble(elementId, currentBase, currentDiscounted, reference) {
+    const diffBase = currentBase - reference;
+    const diffDiscounted = currentDiscounted - reference;
+    const element = document.getElementById(elementId);
+
+    let text = '';
+
+    // Basiswert Differenz
+    if (diffBase > 0) {
+        text = 'Differenz (Basiswert): +' + formatCurrency(diffBase) + ' mehr pro Jahr im Vergleich zum WIN-WIN-Lösungsmodell Erbbau';
+    } else if (diffBase < 0) {
+        text = 'Differenz (Basiswert): ' + formatCurrency(Math.abs(diffBase)) + ' weniger pro Jahr im Vergleich zum WIN-WIN-Lösungsmodell Erbbau';
+    } else {
+        text = 'Differenz (Basiswert): Gleicher Betrag';
+    }
+
+    text += ' | ';
+
+    // Mit Rabatt Differenz
+    if (diffDiscounted > 0) {
+        text += 'Differenz (mit 30% Rabatt): +' + formatCurrency(diffDiscounted) + ' mehr pro Jahr im Vergleich zum WIN-WIN-Lösungsmodell Erbbau';
+        element.className = 'difference positive';
+    } else if (diffDiscounted < 0) {
+        text += 'Differenz (mit 30% Rabatt): ' + formatCurrency(Math.abs(diffDiscounted)) + ' weniger pro Jahr im Vergleich zum WIN-WIN-Lösungsmodell Erbbau';
+        element.className = 'difference negative';
+    } else {
+        text += 'Differenz (mit 30% Rabatt): Gleicher Betrag';
+        element.className = 'difference';
+    }
+
+    element.textContent = text;
 }
 
 function showPercent(elementId, containerId, monthly, income) {
